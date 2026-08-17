@@ -25,10 +25,10 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore UserService/UserService.Tests/UserService.Tests.csproj
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build UserService/UserService.Tests/UserService.Tests.csproj --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test --configuration Release --no-build
+        run: dotnet test UserService/UserService.Tests/UserService.Tests.csproj --configuration Release --no-build
