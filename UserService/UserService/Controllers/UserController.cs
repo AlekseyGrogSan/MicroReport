@@ -4,6 +4,7 @@ using ErrorOr;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace UserService.Controllers
 {
@@ -114,7 +115,7 @@ namespace UserService.Controllers
 
             if (!Guid.TryParse(userId, out var id))
             {
-                return (false, Guid.NewGuid());
+                return (false, Guid.Empty);
             }
 
             return (true, id);

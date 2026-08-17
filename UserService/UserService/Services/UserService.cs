@@ -56,7 +56,7 @@ namespace UserService.Services
 
         public async Task<ErrorOr<DeletedResult>> DeleteAsync(string password, Guid id, CancellationToken cancellationToken = default)
         {
-            var user = await userRepository.GetByIdAsync(id);
+            var user = await userRepository.GetByIdAsync(id, cancellationToken);
 
             if (user == null)
                 return UserError.InvalidCreditianals;

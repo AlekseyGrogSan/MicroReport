@@ -8,11 +8,13 @@ using UserService.Core.Settings;
 using UserService.Data;
 using UserService.Data.Repositories;
 using UserService.Infrastructure;
+using UserService.Midleware;
 using UserService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers();
 
@@ -33,6 +35,8 @@ builder.Services.AddAuthentication(options =>
 )
  .AddJwtBearer(options =>
  {
+     options.MapInboundClaims = false;
+
      options.TokenValidationParameters = new TokenValidationParameters
      {
          ValidateIssuer = true,
@@ -60,6 +64,18 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:3000", "https://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<IUserService, UsersService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
@@ -68,13 +84,15 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+if(!app.Environment.IsEnvironment("Testing"))
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    using (var scope = app.Services.CreateScope())
+    {
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-    dbContext.Database.Migrate();
+        dbContext.Database.Migrate();
+    }
 }
-
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -85,8 +103,15 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseExceptionHandler();
+app.UseHttpsRedirection();
+
+app.UseCors("Frontend");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.Run();
+
+public partial class Program { }
