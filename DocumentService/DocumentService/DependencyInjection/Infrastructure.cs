@@ -2,6 +2,10 @@
 using Amazon.S3;
 using DocumentService.Core.Interfaces;
 using DocumentService.Core.Settings;
+using DocumentService.Date;
+using Microsoft.EntityFrameworkCore;
+using System.Data;
+using Npgsql;
 
 namespace DocumentService.DependencyInjection
 {
@@ -23,6 +27,12 @@ namespace DocumentService.DependencyInjection
 
                 return new AmazonS3Client(s3Settings.AccessKey, s3Settings.SecretKey, configure);
             });
+
+            services.AddDbContext<DocumentDbContext>(options => 
+                options.UseNpgsql(config.GetConnectionString("DefaultConnection")));
+
+            services.AddTransient<IDbConnection>((sp) => 
+                new NpgsqlConnection(config.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<IFileStorageService, FileStorageServise>();
 

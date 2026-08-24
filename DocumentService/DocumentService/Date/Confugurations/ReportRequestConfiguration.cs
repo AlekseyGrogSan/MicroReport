@@ -8,7 +8,7 @@ namespace DocumentService.Date.Confugurations
     {
         public void Configure(EntityTypeBuilder<ReportRequest> builder)
         {
-            builder.ToTable("report_request");
+            builder.ToTable("ReportRequests");
 
             builder.HasKey(r => r.Id);
 

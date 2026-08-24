@@ -40,10 +40,49 @@ services:
     networks:
       - microreport-network
 
+  postgres-docdb:
+    image: postgres:16-alpine
+    container_name: postgres_doc_db
+    restart: always
+    environment:
+      POSTGRES_DB: doc_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5433:5432" 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d doc_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - doc_db_data:/var/lib/postgresql/data
+    networks:
+      - microreport-network
+  minio:
+    image: minio/minio:RELEASE.2024-01-31T03-12-16Z
+    container_name: microreport-minio
+    restart: always
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadminpassword
+    ports:
+      - "9000:9000" # API S3
+      - "9001:9001" # Web Console
+    volumes:
+      - minio_data:/data
+    networks:
+      - microreport-network
+
 networks:
   microreport-network:
     driver: bridge
 
 volumes:
   user_db_data:
+    driver: local
+  doc_db_data:      
+    driver: local
+  minio_data:       
     driver: local

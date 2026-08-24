@@ -10,7 +10,7 @@ namespace DocumentService.Date.Confugurations
     {
         public void Configure(EntityTypeBuilder<DocumentService.Core.Entities.Document> builder)
         {
-            builder.ToTable("document");
+            builder.ToTable("Documents");
 
             builder.HasKey(d => d.Id);
 
