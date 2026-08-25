@@ -17,7 +17,7 @@ namespace DocumentService.Core.Entities
 
         private Document() { }
 
-        public static Document Create(Guid userId, string fileName, string contentType, long sizeBytes, string s3Key)
+        public static Document Create(Guid documentId, Guid userId, string fileName, string contentType, long sizeBytes, string s3Key)
         {
             if (userId == Guid.Empty)
                 throw new ArgumentException("UserId не может быть пустым.", nameof(userId));
@@ -27,7 +27,7 @@ namespace DocumentService.Core.Entities
 
             return new Document
             {
-                Id = Guid.NewGuid(),
+                Id = documentId,
                 UserId = userId,
                 FileName = DocumentName.Create(fileName),
                 ContentType = contentType,

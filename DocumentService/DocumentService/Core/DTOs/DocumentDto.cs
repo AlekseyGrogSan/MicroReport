@@ -1,4 +1,6 @@
-﻿namespace DocumentService.Core.DTOs
+﻿using DocumentService.Core.Enums;
+
+namespace DocumentService.Core.DTOs
 {
     public record DocumentDto(
         Guid Id,
@@ -7,7 +9,7 @@
         string ContentType,
         long SizeBytes,
         string S3Key,
-        string Status,
+        DocumentStatus Status,
         DateTime CreatedAt,
         DateTime? UpdatedAt
     );

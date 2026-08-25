@@ -64,17 +64,18 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("Frontend", policy =>
-    {
-        policy
-            .WithOrigins("http://localhost:3000", "https://localhost:3000")
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
-    });
-});
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("Frontend", policy =>
+//    {
+//        policy
+//            .WithOrigins("http://localhost:3000", "https://localhost:3000")
+//            .AllowAnyHeader()
+//            .AllowAnyMethod()
+//            .AllowCredentials();
+//    });
+//});
 
 builder.Services.AddScoped<IJWTService, JWTService>();
 builder.Services.AddScoped<IUserService, UsersService>();
@@ -106,7 +107,7 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
 
-app.UseCors("Frontend");
+//app.UseCors("Frontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

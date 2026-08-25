@@ -1,5 +1,5 @@
-﻿using DocumentService.Core.Entities;
-using DocumentService.Core.Interfaces;
+﻿using DocumentService.Application.Interfaces;
+using DocumentService.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace DocumentService.Date.Repositories

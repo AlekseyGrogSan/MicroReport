@@ -1,4 +1,4 @@
-﻿namespace DocumentService.Core.Interfaces
+﻿namespace DocumentService.Application.Interfaces
 {
     public interface IFileStorageService
     {

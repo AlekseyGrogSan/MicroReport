@@ -1,6 +1,6 @@
 ﻿using DocumentService.Core.Entities;
 
-namespace DocumentService.Core.Interfaces
+namespace DocumentService.Application.Interfaces
 {
     public interface IDocumentRepository
     {

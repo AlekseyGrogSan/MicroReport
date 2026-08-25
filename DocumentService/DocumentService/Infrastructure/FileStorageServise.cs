@@ -1,8 +1,8 @@
 ﻿using Amazon.S3;
 using Amazon.S3.Model;
-using DocumentService.Core.Interfaces;
 using Microsoft.Extensions.Options;
 using DocumentService.Core.Settings;
+using DocumentService.Application.Interfaces;
 
 namespace DocumentService.Infrastructure
 {
@@ -43,7 +43,7 @@ namespace DocumentService.Infrastructure
 
         public async Task<string> UploadFileAsync(Stream fileStream, string fileName, string contentType, Guid Id, CancellationToken cancellation)
         {
-            var s3Key = $"{DateTime.UtcNow:yyyy/MM}/{Id}_{fileName}";
+            string s3Key = $"{DateTime.UtcNow:yyyy/MM}/{Id}_{fileName}";
 
             var request = new PutObjectRequest
             {
@@ -51,7 +51,7 @@ namespace DocumentService.Infrastructure
                 Key = s3Key,
                 InputStream = fileStream,
                 ContentType = contentType,
-                AutoCloseStream = true
+                AutoCloseStream = false
             };
 
             await _amazonClient.PutObjectAsync(request, cancellation);

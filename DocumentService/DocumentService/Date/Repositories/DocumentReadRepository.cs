@@ -1,10 +1,11 @@
 ﻿using System.Data;
 using Dapper;
+using DocumentService.Application.Interfaces;
 using DocumentService.Core.DTOs;
 
 namespace DocumentService.Date.Repositories
 {
-    public class DocumentReadRepository(IDbConnection _connection)
+    public class DocumentReadRepository(IDbConnection _connection) : IDocumentReadRepository
     {
         public async Task<IEnumerable<DocumentDto>> GetActiveByUserIdAsync(Guid UserId, CancellationToken token)
         {
@@ -12,7 +13,7 @@ namespace DocumentService.Date.Repositories
 
             var command = new CommandDefinition(
                 commandText: querry,
-                parameters: new {CurrentUserId = UserId },
+                parameters: new { CurrentUserId = UserId },
                 cancellationToken: token);
 
             return await _connection.QueryAsync<DocumentDto>(command);
@@ -24,7 +25,7 @@ namespace DocumentService.Date.Repositories
 
             var command = new CommandDefinition(
                 commandText: querry,
-                parameters: new { CurrentUserId = UserId},
+                parameters: new { CurrentUserId = UserId },
                 cancellationToken: token);
 
             return await _connection.QueryAsync<DocumentDto>(command);
@@ -36,7 +37,7 @@ namespace DocumentService.Date.Repositories
 
             var command = new CommandDefinition(
                 commandText: querry,
-                parameters: new { CurrentDocumentId = documentId},
+                parameters: new { CurrentDocumentId = documentId },
                 cancellationToken: token);
 
             return await _connection.QueryFirstOrDefaultAsync<DocumentDto>(command);
