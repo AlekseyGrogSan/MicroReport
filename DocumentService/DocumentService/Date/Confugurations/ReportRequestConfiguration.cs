@@ -13,7 +13,10 @@ namespace DocumentService.Date.Confugurations
             builder.HasKey(r => r.Id);
 
             builder.Property(r => r.UserId)
-            .IsRequired();
+                .IsRequired();
+
+            builder.Property(r => r.UserPromt)
+                .IsRequired();
 
             builder.Property(r => r.TargetContentType)
                 .HasMaxLength(50)

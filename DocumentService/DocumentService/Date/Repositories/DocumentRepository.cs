@@ -19,7 +19,6 @@ namespace DocumentService.Date.Repositories
             if (document == null)
             {
                 _logger.LogWarning("{DateTime}; NotFound a document with ID: {documentId}", DateTime.UtcNow, documentId);
-                return null;
             }
 
             return document;

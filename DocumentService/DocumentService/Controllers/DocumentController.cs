@@ -5,6 +5,10 @@ using DocumentService.Core.DTOs;
 using System.Security.Claims;
 using DocumentService.Application.Features.Commands.Document.UploadDocument;
 using DocumentService.Application.Features.Queries.Document.GetActiveDocument;
+using DocumentService.Application.Features.Queries.Document.DownloadDocument;
+using Microsoft.Net.Http.Headers;
+using DocumentService.Application.Features.Commands.Document.DeleteDocument;
+using DocumentService.Application.Features.Commands.ReportRequest;
 
 namespace DocumentService.Controllers
 {
@@ -34,5 +38,39 @@ namespace DocumentService.Controllers
 
             return Ok(documents);
         }
+
+        [HttpGet("{id:guid}/download")]
+        public async Task<IActionResult> DownloadDocument(Guid id,  CancellationToken token)
+        {
+            var result = await _mediator.Send(new DownloadDocumentCommand(id), cancellationToken: token);
+
+            var contentDisposition = new ContentDispositionHeaderValue("attachment")
+            {
+                FileNameStar = result.filename
+            };
+
+            Response.Headers.Append("Content-Disposition", contentDisposition.ToString());
+
+            return File(
+                fileStream: result.stream,
+                contentType: result.contentType,
+                fileDownloadName: result.filename,
+                enableRangeProcessing: true
+                );
+        }
+
+        [HttpPatch("{id:guid}/trash")]
+        public async Task<IActionResult> SoftDelete(Guid documentId, CancellationToken token)
+        {
+            var result = await _mediator.Send(new DeleteDocumentCommand(documentId), token);
+
+            if (!result)
+            {
+                return Conflict($"File {documentId} alredy exist in trash!");
+            }
+
+            return Ok("File puted in trash");
+        }
+
     }
 }

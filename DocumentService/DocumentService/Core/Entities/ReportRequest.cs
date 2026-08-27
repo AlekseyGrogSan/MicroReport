@@ -8,6 +8,7 @@ namespace DocumentService.Core.Entities
 
         public Guid Id { get; private set; }
         public Guid UserId { get; private set; }
+        public string UserPromt {  get; private set; } = string.Empty;
         public string TargetContentType { get; private set; } = null!;
         public ReportRequestStatus Status { get; private set; }
         public DateTime CreatedAt { get; private set; }
@@ -17,7 +18,7 @@ namespace DocumentService.Core.Entities
 
         private ReportRequest() { }
 
-        public static ReportRequest Create(Guid userId, string targetContentType, IEnumerable<Guid> documentIds)
+        public static ReportRequest Create(Guid userId,string userPromt, string targetContentType, IEnumerable<Guid> documentIds)
         {
             var idsList = documentIds.Distinct().ToList();
             if (!idsList.Any())
@@ -26,6 +27,7 @@ namespace DocumentService.Core.Entities
             var request = new ReportRequest
             {
                 Id = Guid.NewGuid(),
+                UserPromt = userPromt,
                 UserId = userId,
                 TargetContentType = targetContentType,
                 Status = ReportRequestStatus.Pending,
