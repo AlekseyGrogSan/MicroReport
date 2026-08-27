@@ -44,6 +44,10 @@ namespace DocumentService.DependencyInjection
             services.AddScoped<IFileStorageService, FileStorageServise>();
             services.AddScoped<IDocumentRepository, DocumentRepository>();
             services.AddScoped<IDocumentReadRepository, DocumentReadRepository>();
+            services.AddScoped<IReportRequestRepository, ReportRequestRepository>();
+            services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<IReportReadRepository, ReportReadRepository>();
+            services.AddSingleton<IKafkaProducer, KafkaProducer>();
 
             return services;
         }

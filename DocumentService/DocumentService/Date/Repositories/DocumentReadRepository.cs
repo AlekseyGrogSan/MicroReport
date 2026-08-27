@@ -42,5 +42,22 @@ namespace DocumentService.Date.Repositories
 
             return await _connection.QueryFirstOrDefaultAsync<DocumentDto>(command);
         }
+
+        public async Task<IEnumerable<string>> GetS3KeysByDocumnetIdsAsync(IEnumerable<Guid> documnetIds, CancellationToken token)
+        {
+            string query = """
+                SELECT "S3Key"
+                FROM "Documents"
+                WHERE "Id" = ANY(@DocumentIds) AND "Status" != 3
+                """;
+
+            var command = new CommandDefinition(
+                commandText: query,
+                parameters: new { DocumentIds = documnetIds.ToArray() },
+                cancellationToken: token
+                );
+
+            return await _connection.QueryAsync<string>(command);
+        } 
     }
 }

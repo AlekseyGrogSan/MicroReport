@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="AWSSDK.S3" Version="4.0.102.3" />
+    <PackageReference Include="Confluent.Kafka" Version="2.15.0" />
     <PackageReference Include="Dapper" Version="2.1.79" />
     <PackageReference Include="FileSignatures" Version="7.3.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
