@@ -117,4 +117,7 @@
     docker compose up -d --build
     ```
     
-3. Откройте для тестирования: http://localhost:5000/Swagger
+3. Откройте для тестирования:
+   ```
+   http://localhost:5000/Swagger
+   ```
