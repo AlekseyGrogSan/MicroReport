@@ -107,23 +107,14 @@
     cd MicroReport
     ```
     
-2. Запустите инфраструктурные контейнеры (PostgreSQL, Kafka, Redis, MinIO):
+2. Запустите контейнеры:
     
       
     
     Bash
     
     ```
-    docker compose up -d
+    docker compose up -d --build
     ```
     
-3. Примените миграции и запустите API Gateway:
-    
-      
-    
-    Bash
-    
-    ```
-    dotnet run --project src/ApiGateway
-    ```
-    
+3. Откройте для тестирования: http://localhost:5000/Swagger
