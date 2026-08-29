@@ -5,8 +5,8 @@
         Guid ReportRequestId,
         Guid UserId,
         string ReportName,
+        string ContentType,
         string S3Key,
-        long SizeBytes,
         DateTime CreatedAt
     );
 }
