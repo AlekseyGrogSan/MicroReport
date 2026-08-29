@@ -33,7 +33,7 @@ namespace DocumentService.Application.Features.Commands.ReportRequest
 
             _logger.LogInformation("Request {requestId} for make report was registy", reportRequest.Id);
 
-            var topic = _settings.Value.Topics["ReportRequestTopic"];
+            var topic = _settings.Value.Topics["ReportRequested"];
 
             var s3Keys = await _documentRepository.GetS3KeysByDocumnetIdsAsync(request.documentsIds, cancellationToken);
 

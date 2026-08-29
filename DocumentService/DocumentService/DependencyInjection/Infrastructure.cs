@@ -48,6 +48,7 @@ namespace DocumentService.DependencyInjection
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IReportReadRepository, ReportReadRepository>();
             services.AddSingleton<IKafkaProducer, KafkaProducer>();
+            services.AddHostedService<ReportGenerationBackgroundService>();
 
             return services;
         }
