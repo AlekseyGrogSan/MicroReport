@@ -3,6 +3,8 @@ using DocumentService.Application.Interfaces;
 using DocumentService.Core.DTOs;
 using DocumentService.Core.Entities;
 using DocumentService.Core.Settings;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
@@ -29,67 +31,95 @@ namespace DocumentService.Infrastructure
             await Task.Yield();
 
             var settings = _kafkaSettings.CurrentValue;
-            var topic = settings.Topics["ReportCompleted"];
+
+            if (!settings.Topics.TryGetValue("ReportCompleted", out var topic) || string.IsNullOrEmpty(topic))
+            {
+                _logger.LogError("Топик 'ReportCompleted' не найден в конфигурации KafkaSettings.");
+                return;
+            }
 
             var config = new ConsumerConfig
             {
                 BootstrapServers = settings.BootstrapServers,
                 GroupId = settings.GroupId,
                 AutoOffsetReset = AutoOffsetReset.Earliest,
-                EnableAutoCommit = false
+                EnableAutoCommit = false 
             };
 
-            using var consumer = new ConsumerBuilder<string, string>(config).Build(); 
+            using var consumer = new ConsumerBuilder<string, string>(config).Build();
             consumer.Subscribe(topic);
 
-            _logger.LogInformation("Kafka Consumer succesful started and listen topic {topicName}", topic);
+            _logger.LogInformation("Kafka Consumer успешно запущен и слушает топик {TopicName}", topic);
 
-            while(!stoppingToken.IsCancellationRequested)
+            try
             {
-                try
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    var consumerResult = consumer.Consume(stoppingToken);
-                    if (consumerResult == null ||
-                        string.IsNullOrEmpty(consumerResult.Message.Value))
+                    try
                     {
-                        continue;
-                    }
-
-                    var completedEvent = JsonSerializer.Deserialize<ReportCompletedEventDto>(consumerResult.Message.Value);
-                    if (completedEvent == null)
-                    {
-                        _logger.LogWarning("Не удалось десериализовать событие завершения отчета.");
-                        consumer.Commit(consumerResult);
-                        continue;
-                    }
-
-                    using (var scope = _scopeFactory.CreateScope())
-                    {
-                        var reportRepository = scope.ServiceProvider.GetRequiredService<IReportRepository>();
-                        var reportRequestRepository = scope.ServiceProvider.GetRequiredService<IReportRequestRepository>();
-
-                        var report = Report.Create(
-                            requestId: completedEvent.RequestId,
-                            userId: completedEvent.UserId,
-                            reportName: completedEvent.ReportName,
-                            contentType: completedEvent.ContentType,
-                            s3Key: completedEvent.S3Key
-                        );
-
-                        var reportRequest = await reportRequestRepository.GetByIdAsync(completedEvent.RequestId, stoppingToken);
-                        if (reportRequest != null)
+                        var consumerResult = consumer.Consume(stoppingToken);
+                        if (consumerResult == null || string.IsNullOrEmpty(consumerResult.Message.Value))
                         {
-                            reportRequest.MarkAsCompleted(); 
+                            continue;
                         }
 
-                        await reportRepository.AddReportAsync(report, stoppingToken);
-                        await reportRequestRepository.SaveChangesAsync(stoppingToken);
+                        var completedEvent = JsonSerializer.Deserialize<ReportCompletedEventDto>(consumerResult.Message.Value);
+                        if (completedEvent == null)
+                        {
+                            _logger.LogWarning("Не удалось десериализовать событие завершения отчета.");
+                            consumer.Commit(consumerResult);
+                            continue;
+                        }
+
+                        using (var scope = _scopeFactory.CreateScope())
+                        {
+                            var reportRepository = scope.ServiceProvider.GetRequiredService<IReportRepository>();
+                            var reportRequestRepository = scope.ServiceProvider.GetRequiredService<IReportRequestRepository>();
+
+                            var report = Report.Create(
+                                requestId: completedEvent.RequestId,
+                                userId: completedEvent.UserId,
+                                reportName: completedEvent.ReportName,
+                                contentType: completedEvent.ContentType,
+                                s3Key: completedEvent.S3Key
+                            );
+
+                            var reportRequest = await reportRequestRepository.GetByIdAsync(completedEvent.RequestId, stoppingToken);
+                            if (reportRequest != null)
+                            {
+                                reportRequest.MarkAsCompleted();
+                            }
+
+                            await reportRepository.AddReportAsync(report, stoppingToken);
+                            await reportRequestRepository.SaveChangesAsync(stoppingToken);
+                        }
+
+                        // 4. Подтверждаем обработку в Kafka строго ПОСЛЕ сохранения в БД
+                        consumer.Commit(consumerResult);
+                        _logger.LogInformation("Отчет по запросу {RequestId} успешно сохранен в БД.", completedEvent.RequestId);
+                    }
+                    catch (ConsumeException ex)
+                    {
+                        _logger.LogError(ex, "Ошибка при получении сообщения из Kafka.");
+                    }
+                    catch (JsonException ex)
+                    {
+                        _logger.LogError(ex, "Ошибка десериализации сообщения из Kafka.");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Ошибка при обработке результата генерации отчета.");
                     }
                 }
-                catch
-                {
-
-                }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Остановка Kafka Consumer по сигналу CancellationToken.");
+            }
+            finally
+            {
+                // Обязательно отписываемся и закрываем сокет при выходе
+                consumer.Close();
             }
         }
     }
