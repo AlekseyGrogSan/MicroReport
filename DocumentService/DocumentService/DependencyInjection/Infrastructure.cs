@@ -29,6 +29,8 @@ namespace DocumentService.DependencyInjection
                 return new AmazonS3Client(s3Settings.AccessKey, s3Settings.SecretKey, configure);
             });
 
+            services.Configure<KafkaSettings>(config.GetSection(KafkaSettings.SectionName));
+
             // Безопасный фолбэк для строки подключения к Postgres
             var connectionString = config.GetConnectionString("Postgres")
                                    ?? config.GetConnectionString("DefaultConnection")

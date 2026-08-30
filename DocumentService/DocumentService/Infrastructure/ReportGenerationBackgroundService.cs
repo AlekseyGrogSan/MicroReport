@@ -43,12 +43,15 @@ namespace DocumentService.Infrastructure
                 BootstrapServers = settings.BootstrapServers,
                 GroupId = settings.GroupId,
                 AutoOffsetReset = AutoOffsetReset.Earliest,
-                EnableAutoCommit = false 
+                EnableAutoCommit = false,
+                SocketTimeoutMs = 10000,
+                SessionTimeoutMs = 10000,
             };
 
             using var consumer = new ConsumerBuilder<string, string>(config).Build();
-            consumer.Subscribe(topic);
 
+            _logger.LogInformation("Подключение к Kafka брокеру {BootstrapServers}...", settings.BootstrapServers);
+            consumer.Subscribe(topic);
             _logger.LogInformation("Kafka Consumer успешно запущен и слушает топик {TopicName}", topic);
 
             try

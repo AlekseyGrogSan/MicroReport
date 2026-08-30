@@ -88,10 +88,17 @@ services:
       - S3Settings__BucketName=documents
       # 3. Согласован SecretKey для валидации JWT
       - JwtSettings__SecretKey=SuperSecretKeyForJWTTokenValidationMustBeLongEnough123!
+      #Kafka
+      - Kafka__BootstrapServers=kafka:29092
+      - Kafka__Topics__ReportRequested=report-requests-topic
+      - Kafka__Topics__ReportCompleted=report-completed-topic
+      - Kafka__GroupId=document-service-report-consumers
     depends_on:
       postgres-docdb:
         condition: service_healthy
       minio:
+        condition: service_started
+      kafka:
         condition: service_started
     networks:
       - microreport-network
@@ -131,6 +138,13 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_LOG_DIRS: '/tmp/kraft-combined-logs'
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 29092 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - microreport-network
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
