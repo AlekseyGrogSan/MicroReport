@@ -154,6 +154,55 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: local-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+  
+  ollama:
+    image: ollama/ollama:latest
+    container_name: microreport-ollama
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - microreport-network
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  ai-service:
+    build:
+      context: ./AI_Service/AI_Service
+      dockerfile: Dockerfile
+    container_name: ai-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # Kafka
+      - Kafka__BootstrapServers=kafka:29092
+      - Kafka__GroupId=ai-generator-group
+      - Kafka__Topics__ReportRequested=report-requests-topic
+      - Kafka__Topics__ReportCompleted=report-completed-topic
+      - Kafka__Topics__Notification=notification-topic
+      # S3 / MinIO
+      - S3Settings__Endpoint=http://minio:9000
+      - S3Settings__AccessKey=minioadmin
+      - S3Settings__SecretKey=minioadminpassword
+      - S3Settings__BucketName=documents
+      # Ollama
+      - OllamaSettings__Endpoint=http://ollama:11434
+      - OllamaSettings__ModelId=llama3
+    depends_on:
+      kafka:
+        condition: service_healthy
+      minio:
+        condition: service_started
+      ollama:
+        condition: service_started
+    networks:
+      - microreport-network
 
 networks:
   microreport-network:
