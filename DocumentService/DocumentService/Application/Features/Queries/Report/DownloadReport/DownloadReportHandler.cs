@@ -7,7 +7,8 @@ namespace DocumentService.Application.Features.Queries.Report.DownloadReport
 {
     public class DownloadReportHandler(
         IReportReadRepository _repository,
-        IFileStorageService _storage
+        IFileStorageService _storage,
+        ILogger<DownloadReportHandler> _logger
         ) : IRequestHandler<DownloadReportQuery, DownloadfResult>
     {
         public async Task<DownloadfResult> Handle(DownloadReportQuery request, CancellationToken cancellationToken)
@@ -16,6 +17,8 @@ namespace DocumentService.Application.Features.Queries.Report.DownloadReport
 
             if ( metadate == null)
             {
+                _logger.LogError("Не нашли запрос или результат поиска это null");
+                
                 throw new DirectoryNotFoundException();
             }
 

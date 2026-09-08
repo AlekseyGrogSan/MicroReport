@@ -7,17 +7,21 @@ using System.Diagnostics;
 namespace AI_Service.Infrastructure
 {
     public class AIService(
-        Kernel _kernel
+        Kernel _kernel,
+            ILogger<AIService> _logger
         ) : IAIService
     {
         public async Task<AIResult> GenerateAIReport(RequestModel request, string aggregatedContext, CancellationToken token)
         {
             var stopWatch = Stopwatch.StartNew();
 
-            var chatCompletition = _kernel.GetRequiredService<IChatCompletionService>();
 
+
+            var chatCompletition = _kernel.GetRequiredService<IChatCompletionService>();
+            _logger.LogInformation("Дулаем запрос к ИИ");
             var promt = $"""
                 Ты — аналитический ассистент. Создай структурированный отчет на основе предоставленного контекста документов.
+                Сделай быстрый и простой отчет.
 
                 Требование пользователя:
                 {request.Prompt}
@@ -27,7 +31,7 @@ namespace AI_Service.Infrastructure
                 """;
 
             var response = await chatCompletition.GetChatMessageContentAsync(promt, cancellationToken: token);
-
+            _logger.LogInformation("Запрос успешно обработан");
             stopWatch.Stop();
 
             return new AIResult(

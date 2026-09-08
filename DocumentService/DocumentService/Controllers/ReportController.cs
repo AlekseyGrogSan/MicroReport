@@ -14,7 +14,7 @@ namespace DocumentService.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize]
-    public class ReportController(IMediator _mediator) : ControllerBase
+    public class ReportController(IMediator _mediator, ILogger<ReportController> _logger) : ControllerBase
     {
         private Guid UserId => Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)
                    ?? throw new UnauthorizedAccessException("User ID is missing in token."));
@@ -23,15 +23,16 @@ namespace DocumentService.Controllers
         public async Task<IActionResult> CreateReportRequest([FromBody] CreateReportRequestCommand command, CancellationToken token)
         {
             var secureCommand = command with { UserId = UserId };
-            var result = await _mediator.Send(command, cancellationToken: token);
+            var result = await _mediator.Send(secureCommand, cancellationToken: token);
 
             return Accepted(new { RequestId = result, status = "Pending" });
         }
 
         [HttpGet("{id:guid}/download")]
-        public async Task<IActionResult> DownloadReport(Guid Id, CancellationToken token)
+        public async Task<IActionResult> DownloadReport(Guid id, CancellationToken token)
         {
-            var result = await _mediator.Send(new DownloadReportQuery(Id), token);
+            _logger.LogInformation("Начали скачивать документ с ID {ID}", id);
+            var result = await _mediator.Send(new DownloadReportQuery(id), token);
 
             var contentDisposition = new ContentDisposition
             {
@@ -40,9 +41,14 @@ namespace DocumentService.Controllers
 
             Response.Headers.Append("Content-Disposition", contentDisposition.ToString());
 
+            var content_type = result.contentType switch
+            {
+                ".md" => "text/markdown",
+                _ => "text/markdown"
+            };
             return File(
                fileStream: result.stream,
-               contentType: result.contentType,
+               contentType: content_type,
                fileDownloadName: result.filename,
                enableRangeProcessing: true
                );
@@ -56,9 +62,9 @@ namespace DocumentService.Controllers
         }
 
         [HttpGet("{id:guid}/get-status")]
-        public async Task<IActionResult> GetStatusRequest(Guid Id, CancellationToken token)
+        public async Task<IActionResult> GetStatusRequest(Guid id, CancellationToken token)
         {
-            var result = await _mediator.Send(new GetStatusQuery(Id), token);
+            var result = await _mediator.Send(new GetStatusQuery(id), token);
             if (result == null)
             {
                 return NoContent();

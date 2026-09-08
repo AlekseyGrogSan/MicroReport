@@ -41,17 +41,28 @@ namespace AI_Service.DependencyInjection
             if (ollama != null) 
             {
                 var kernekBuilder = Kernel.CreateBuilder();
+
+                var httpClient = new HttpClient
+                {
+                    BaseAddress = new Uri(ollama.Endpoint),
+                    Timeout = TimeSpan.FromMinutes(10)
+                };
                 kernekBuilder.AddOllamaChatCompletion(
                     modelId: ollama.ModelId,
-                    endpoint: new Uri(ollama.Endpoint)
+                    httpClient: httpClient
                     );
                 services.AddSingleton(kernekBuilder.Build());
             }
 
             services.AddScoped<IDocumentParserService, DocumentParserService>();
             services.AddScoped<IReportExporterService, ReportExporterService>();
-            services.AddScoped<IReportExporterService, ReportExporterService>();
-            services.AddScoped<IS3Service, S3Service>();
+            services.AddScoped<IAIService, AIService>();
+
+            services.AddSingleton<IS3Service, S3Service>();
+            services.AddSingleton<IKafkaProducerService, KafkaProducerService>();
+
+            services.AddHostedService<AIProcessorWorker>();
+            services.AddHostedService<KafkaConsumerService>();
 
             return services;
         }

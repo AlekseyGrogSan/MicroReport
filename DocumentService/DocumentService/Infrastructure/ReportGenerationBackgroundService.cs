@@ -83,7 +83,7 @@ namespace DocumentService.Infrastructure
                                 requestId: completedEvent.RequestId,
                                 userId: completedEvent.UserId,
                                 reportName: completedEvent.ReportName,
-                                contentType: completedEvent.ContentType,
+                                contentType: completedEvent.ContentType ?? "text/markdown",
                                 s3Key: completedEvent.S3Key
                             );
 

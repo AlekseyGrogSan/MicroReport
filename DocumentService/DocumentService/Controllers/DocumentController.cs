@@ -60,13 +60,13 @@ namespace DocumentService.Controllers
         }
 
         [HttpPatch("{id:guid}/trash")]
-        public async Task<IActionResult> SoftDelete(Guid documentId, CancellationToken token)
+        public async Task<IActionResult> SoftDelete(Guid id, CancellationToken token)
         {
-            var result = await _mediator.Send(new DeleteDocumentCommand(documentId), token);
+            var result = await _mediator.Send(new DeleteDocumentCommand(id), token);
 
             if (!result)
             {
-                return Conflict($"File {documentId} alredy exist in trash!");
+                return Conflict($"File {id} alredy exist in trash!");
             }
 
             return Ok("File puted in trash");

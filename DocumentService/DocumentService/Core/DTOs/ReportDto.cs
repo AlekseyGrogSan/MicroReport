@@ -2,7 +2,7 @@
 {
     public record ReportDto(
         Guid Id,
-        Guid ReportRequestId,
+        Guid RequestId,
         Guid UserId,
         string ReportName,
         string ContentType,

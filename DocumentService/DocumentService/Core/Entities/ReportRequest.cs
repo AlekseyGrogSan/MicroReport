@@ -9,7 +9,7 @@ namespace DocumentService.Core.Entities
         public Guid Id { get; private set; }
         public Guid UserId { get; private set; }
         public string UserPromt {  get; private set; } = string.Empty;
-        public string TargetContentType { get; private set; } = null!;
+        public string TargetContentType { get; private set; } = string.Empty;
         public ReportRequestStatus Status { get; private set; }
         public DateTime CreatedAt { get; private set; }
         public DateTime? UpdatedAt { get; private set; }

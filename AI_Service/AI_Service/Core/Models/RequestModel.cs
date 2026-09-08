@@ -5,6 +5,7 @@
         Guid RequestId,
         Guid UserId,
         string Prompt,
-        List<string> DocumentS3Keys
+        List<string> DocumentS3Keys,
+        string ContentType
     );
 }

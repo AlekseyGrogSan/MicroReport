@@ -10,10 +10,11 @@ namespace AI_Service.Infrastructure
 {
     public class ReportExporterService(IS3Service _storage) : IReportExporterService
     {
-        public async Task<string> ExportReportAsync(AIResult result, Guid requstId, string format, CancellationToken token)
+        public async Task<(string s3key, string filename, string format)> ExportReportAsync(AIResult result, Guid requstId, string format, CancellationToken token)
         {
-            string filename = $"reports/{DateTime.UtcNow:yyyy/MM}/{requstId}_{format.ToLower()}";
-            string contentType = format.ToLower() switch
+            var safeFormat = (format ?? "markdown").ToLower();
+            string filename = $"reports/{DateTime.UtcNow:yyyy/MM}/{requstId}_{safeFormat}";
+            string contentType = safeFormat.ToLower() switch
             {
                 "pdf" => "application/pdf",
                 "html" => "text/html",
@@ -22,7 +23,9 @@ namespace AI_Service.Infrastructure
             var context = Encoding.UTF8.GetBytes(result.GeneratedContent);
             using var stream = new MemoryStream(context);
 
-            return await _storage.UploadAsync(stream, filename, contentType, requstId, token);
+            string s3Key =  await _storage.UploadAsync(stream, filename, contentType, requstId, token);
+
+            return (s3Key, filename, safeFormat);
         }
     }
 }

@@ -37,7 +37,7 @@ namespace DocumentService.Application.Features.Commands.ReportRequest
 
             var s3Keys = await _documentRepository.GetS3KeysByDocumnetIdsAsync(request.documentsIds, cancellationToken);
 
-            var eventDto = new ReportRequestEventDto(reportRequest.Id, reportRequest.UserId, reportRequest.UserPromt, s3Keys.ToList());
+            var eventDto = new ReportRequestEventDto(reportRequest.Id, reportRequest.UserId, reportRequest.UserPromt, s3Keys.ToList(), request.TargetContentType);
 
             await _producer.ProduceAsync(topic, eventDto, cancellationToken);
 
