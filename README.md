@@ -116,8 +116,15 @@
     ```
     docker compose up -d --build
     ```
+
+3. Скачайте llama3
+
+    Bash
+    ```
+    docker exec -it microreport-ollama ollama pull llama3
+    ```
     
-3. Откройте для тестирования:
+4. Откройте для тестирования:
    ```
    http://localhost:5000/Swagger
    ```
